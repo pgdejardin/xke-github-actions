@@ -7,6 +7,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      BRANCH: ${{ github.ref }}
+      COMMIT: ${{ secret.token }}
+
     strategy:
       matrix:
         node-version: [12.x]
@@ -24,3 +28,13 @@ jobs:
         npm test
       env:
         CI: true
+    - name: Build docker image
+        id: docker_build
+        env:
+          DOCKER_REGISTRY: 'docker.io'
+          DOCKER_NAMESPACE: 'xebxke'
+          DOCKER_IMAGE: 'awesome-pg-app'
+          BRANCH: ${{ github.ref }}
+        run: |
+          docker build -t $DOCKER_REGISTRY/$DOCKER_NAMESPACE/$DOCKER_IMAGE:${BRANCH#refs/heads/}-$GITHUB_SHA .
+          echo "::set-output name=docker_tag::$DOCKER_REGISTRY/$DOCKER_NAMESPACE/$DOCKER_IMAGE:${BRANCH#refs/heads/}-$GITHUB_SHA"
