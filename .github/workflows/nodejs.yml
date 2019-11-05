@@ -45,3 +45,22 @@ jobs:
       run: |
         docker login $DOCKER_REGISTRY --username ${{ secrets.DOCKER_HUB_USERNAME }} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
         docker push ${{ steps.docker_build.outputs.docker_tag }}
+
+    - name: Notify Slack on failure
+      if: failure()
+      uses: ./.github/actions/slack-notifier
+      env:
+        SLACK_CHANNEL: "#xke-github-actions"
+        SLACK_BOT: "githubActionRulz"
+        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+      with:
+        message: "Hello from PG"
+        - name: Notify Slack on success
+          if: success()
+          uses: ./.github/actions/slack-notifier
+          env:
+            SLACK_CHANNEL: "#xke-github-actions"
+            SLACK_BOT: "githubActionRulz"
+            SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          with:
+            message: "${{ github.actor }} published a new image : ${{ steps.docker_build.outputs.docker_tag }}"
